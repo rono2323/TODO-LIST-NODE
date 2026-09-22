@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: simple-page
-          image: rono23/simple-page:latest
+          image: rono23/simple-page:39
 
           ports:
             - containerPort: 80
