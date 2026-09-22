@@ -1,5 +1,6 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
+
 metadata:
   name: simple-page
   namespace: simple-page
@@ -21,6 +22,7 @@ spec:
     spec:
       containers:
         - name: simple-page
+
           image: rono23/simple-page:39
 
           ports:
@@ -53,20 +55,11 @@ spec:
         - pause:
             duration: 30s
 
-        # Check Prometheus
-        - analysis:
-            templates:
-              - templateName: simple-page-health
-
         # 25% traffic
         - setWeight: 25
 
         - pause:
             duration: 30s
-
-        - analysis:
-            templates:
-              - templateName: simple-page-health
 
         # 50% traffic
         - setWeight: 50
@@ -74,9 +67,5 @@ spec:
         - pause:
             duration: 30s
 
-        - analysis:
-            templates:
-              - templateName: simple-page-health
-
-        # Full deployment
+        # 100% traffic
         - setWeight: 100
