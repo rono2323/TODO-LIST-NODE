@@ -3,6 +3,7 @@ kind: Rollout
 metadata:
   name: simple-page
   namespace: simple-page
+
 spec:
   replicas: 4
 
@@ -16,6 +17,7 @@ spec:
     metadata:
       labels:
         app: simple-page
+
     spec:
       containers:
         - name: simple-page
@@ -40,19 +42,25 @@ spec:
 
   strategy:
     canary:
-      canaryService: simple-page-canary
       stableService: simple-page
+      canaryService: simple-page-canary
 
       steps:
+
+        # 10% traffic
         - setWeight: 10
+
         - pause:
             duration: 30s
 
+        # Check Prometheus
         - analysis:
             templates:
               - templateName: simple-page-health
 
+        # 25% traffic
         - setWeight: 25
+
         - pause:
             duration: 30s
 
@@ -60,7 +68,9 @@ spec:
             templates:
               - templateName: simple-page-health
 
+        # 50% traffic
         - setWeight: 50
+
         - pause:
             duration: 30s
 
@@ -68,4 +78,5 @@ spec:
             templates:
               - templateName: simple-page-health
 
+        # Full deployment
         - setWeight: 100
