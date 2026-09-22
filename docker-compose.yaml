@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   web:
     image: rono23/simple-page:${IMAGE_TAG:-latest}
@@ -7,4 +5,4 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8000:80"
+      - "8000:8000"
