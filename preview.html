@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevOps Deployment Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7fb;
+      color: #17233c;
+    }
+    header {
+      background: #172f52;
+      color: white;
+      padding: 24px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+    header h1 { font-size: 28px; margin-bottom: 6px; }
+    header p { color: #c9d7ea; }
+    .live { color: #6ee7a2; font-weight: bold; }
+    main { width: 90%; max-width: 1400px; margin: 28px auto; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+    .card, .panel {
+      background: white;
+      border: 1px solid #dce5f0;
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 5px 18px rgba(30, 55, 90, .06);
+    }
+    .label { color: #667892; font-size: 14px; margin-bottom: 12px; }
+    .value { font-size: 25px; font-weight: 700; }
+    .healthy { color: #08a866; }
+    .purple { color: #7045d8; }
+    .blue { color: #1769e0; }
+    .muted { color: #74849b; font-size: 13px; margin-top: 8px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .panel h2 { font-size: 20px; margin-bottom: 8px; }
+    .panel-sub { color: #718198; font-size: 14px; margin-bottom: 25px; }
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 35px 10px 25px;
+    }
+    .steps:before {
+      content: "";
+      position: absolute;
+      top: 16px;
+      left: 5%;
+      right: 5%;
+      height: 3px;
+      background: #dce5ef;
+      z-index: 0;
+    }
+    .step { text-align: center; position: relative; z-index: 1; width: 20%; }
+    .circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #dce5ef;
+      display: grid;
+      place-items: center;
+      margin: auto;
+      font-weight: bold;
+    }
+    .step.done .circle, .step.active .circle { background: #16b875; color: white; }
+    .step strong { display: block; margin-top: 12px; font-size: 14px; }
+    .step small { color: #7b899c; display: block; margin-top: 5px; }
+    .progress {
+      height: 14px;
+      background: #e6edf5;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 30px;
+    }
+    .progress span {
+      display: block;
+      width: 10%;
+      height: 100%;
+      background: #1769e0;
+      border-radius: inherit;
+    }
+    .versions { display: grid; gap: 14px; }
+    .version {
+      border: 1px solid #dce5f0;
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .version.canary { border-color: #bca9ef; background: #faf8ff; }
+    .version-title {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    .badge {
+      padding: 5px 9px;
+      border-radius: 8px;
+      background: #e9f1ff;
+      color: #1769e0;
+      font-size: 12px;
+    }
+    .canary .badge { background: #eee7ff; color: #7045d8; }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      color: #667892;
+      font-size: 14px;
+    }
+    .row b { color: #243650; }
+    .bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .traffic {
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .donut {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: conic-gradient(#1769e0 0 90%, #7045d8 90% 100%);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .donut:after {
+      content: "";
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      background: white;
+      position: absolute;
+    }
+    .donut-text {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      font-weight: bold;
+    }
+    .legend div { margin: 14px 0; }
+    .dot {
+      display: inline-block;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background: #1769e0;
+    }
+    .dot.p { background: #7045d8; }
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #edf1f6;
+    }
+    .metric:last-child { border-bottom: 0; }
+    .metric small { color: #75849a; }
+    .metric strong { display: block; font-size: 18px; margin-top: 4px; }
+    .events { list-style: none; }
+    .events li {
+      padding: 10px 0;
+      border-bottom: 1px solid #edf1f6;
+      font-size: 14px;
+    }
+    .events li:last-child { border-bottom: 0; }
+    footer {
+      text-align: center;
+      color: #7b899c;
+      padding: 28px 10px;
+      font-size: 13px;
+    }
+    @media (max-width: 1100px) {
+      .cards { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 800px) {
+      .cards, .layout, .bottom { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; }
+      .traffic { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>DevOps Deployment Dashboard</h1>
+    <p>Zero-Downtime Canary Deployment Pipeline</p>
+  </div>
+  <div class="live">● Live Application</div>
+</header>
+
+<main>
+  <section class="cards">
+    <div class="card">
+      <div class="label">Application Status</div>
+      <div class="value healthy">Healthy</div>
+      <div class="muted">All systems operational</div>
+    </div>
+    <div class="card">
+      <div class="label">Version</div>
+      <div class="value">v2.0</div>
+      <div class="muted">Latest deployed version</div>
+    </div>
+    <div class="card">
+      <div class="label">Deployment Strategy</div>
+      <div class="value purple">Canary</div>
+      <div class="muted">Gradual traffic shifting</div>
+    </div>
+    <div class="card">
+      <div class="label">Traffic Split</div>
+      <div class="value"><span class="blue">90% v1</span> / <span class="purple">10% v2</span></div>
+      <div class="muted">Current deployment</div>
+    </div>
+    <div class="card">
+      <div class="label">Error Rate</div>
+      <div class="value">0.2%</div>
+      <div class="muted">Target &lt; 1%</div>
+    </div>
+    <div class="card">
+      <div class="label">Response Time</div>
+      <div class="value">120 ms</div>
+      <div class="muted">Target &lt; 500 ms</div>
+    </div>
+  </section>
+
+  <section class="layout">
+    <div class="panel">
+      <h2>Deployment Progress</h2>
+      <div class="panel-sub">Traffic is being shifted gradually to the new version.</div>
+
+      <div class="steps">
+        <div class="step done">
+          <div class="circle">✓</div>
+          <strong>Deploy v2</strong>
+          <small>Completed</small>
+        </div>
+        <div class="step active">
+          <div class="circle">✓</div>
+          <strong>10% Traffic</strong>
+          <small>In Progress</small>
+        </div>
+        <div class="step">
+          <div class="circle">3</div>
+          <strong>25% Traffic</strong>
+          <small>Pending</small>
+        </div>
+        <div class="step">
+          <div class="circle">4</div>
+          <strong>50% Traffic</strong>
+          <small>Pending</small>
+        </div>
+        <div class="step">
+          <div class="circle">5</div>
+          <strong>100% Traffic</strong>
+          <small>Pending</small>
+        </div>
+      </div>
+
+      <div class="progress"><span></span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Deployment Versions</h2>
+      <div class="panel-sub">Current versions running in Kubernetes.</div>
+
+      <div class="versions">
+        <div class="version">
+          <div class="version-title">
+            <span class="blue">● v1.0 (Stable)</span>
+            <span class="badge">90% traffic</span>
+          </div>
+          <div class="row"><span>Replicas</span><b>9 / 10</b></div>
+          <div class="row"><span>Image</span><b>app:v1</b></div>
+          <div class="row"><span>Status</span><b class="healthy">● Healthy</b></div>
+        </div>
+
+        <div class="version canary">
+          <div class="version-title">
+            <span class="purple">● v2.0 (Canary)</span>
+            <span class="badge">10% traffic</span>
+          </div>
+          <div class="row"><span>Replicas</span><b>1 / 10</b></div>
+          <div class="row"><span>Image</span><b>app:v2</b></div>
+          <div class="row"><span>Status</span><b class="healthy">● Healthy</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bottom">
+    <div class="panel">
+      <h2>Traffic Distribution</h2>
+      <div class="panel-sub">Live traffic split between application versions.</div>
+
+      <div class="traffic">
+        <div class="donut">
+          <div class="donut-text">10%<br><small>v2 Traffic</small></div>
+        </div>
+        <div class="legend">
+          <div><span class="dot"></span><b>v1 Stable</b><br>&nbsp;&nbsp;&nbsp;&nbsp;90% traffic</div>
+          <div><span class="dot p"></span><b>v2 Canary</b><br>&nbsp;&nbsp;&nbsp;&nbsp;10% traffic</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Live Metrics</h2>
+      <div class="panel-sub">Metrics monitored by Prometheus.</div>
+
+      <div class="metric">
+        <div><small>Request Rate</small><strong>12.4 req/s</strong></div>
+        <span class="blue">↗</span>
+      </div>
+      <div class="metric">
+        <div><small>Error Rate</small><strong class="healthy">0.2%</strong></div>
+        <span class="healthy">✓</span>
+      </div>
+      <div class="metric">
+        <div><small>Response Time</small><strong>120 ms</strong></div>
+        <span class="purple">↗</span>
+      </div>
+      <div class="metric">
+        <div><small>CPU Usage</small><strong>32%</strong></div>
+        <span class="blue">▥</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Recent Events</h2>
+      <div class="panel-sub">Latest deployment activity.</div>
+      <ul class="events">
+        <li>🟢 12:40 — v2.0 deployed successfully</li>
+        <li>🔵 12:38 — Traffic shifted to 10% (v2)</li>
+        <li>🟢 12:36 — Health checks passed</li>
+        <li>🔵 12:30 — Argo Rollouts started canary deployment</li>
+        <li>🟢 12:25 — Build and security scan completed</li>
+        <li>🟢 12:20 — Image pushed to Docker Hub</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h2>Pipeline</h2>
+      <div class="panel-sub">Tools used in the deployment workflow.</div>
+      <div class="metric"><span>Source</span><strong>GitHub</strong></div>
+      <div class="metric"><span>CI/CD</span><strong>Jenkins</strong></div>
+      <div class="metric"><span>Security</span><strong>Trivy</strong></div>
+      <div class="metric"><span>Quality</span><strong>SonarQube</strong></div>
+      <div class="metric"><span>Container Registry</span><strong>Docker Hub</strong></div>
+      <div class="metric"><span>Deployment</span><strong>Kubernetes + Argo Rollouts</strong></div>
+      <div class="metric"><span>Monitoring</span><strong>Prometheus + Grafana</strong></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Zero-Downtime Canary Deployment Demo · Open-source DevOps Stack
+</footer>
+
+</body>
+</html>
