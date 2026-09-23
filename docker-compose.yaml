@@ -1,8 +1,7 @@
+version: '3.9'
+
 services:
   web:
-    image: rono23/simple-page:${IMAGE_TAG:-latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: trainwithshubham/node-app:latest
     ports:
-      - "8000:80"
+      - "8000:8000"

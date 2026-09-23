@@ -1,7 +1,16 @@
-FROM nginx:alpine
+# Node Base Image
+FROM node:12.2.0-alpine
 
-COPY index.html /usr/share/nginx/html/index.html
+#Working Directry
+WORKDIR /node
 
-EXPOSE 80
+#Copy the Code
+COPY . .
 
-CMD ["nginx", "-g", "daemon off;"]
+#Install the dependecies
+RUN npm install
+RUN npm run test
+EXPOSE 8000
+
+#Run the code
+CMD ["node","app.js"]
