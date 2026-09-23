@@ -11,7 +11,7 @@ after(() => {
 	console.log( "This part executes once after all tests" );
 });
 
-#bad
+
 	
 // We can add nested blocks for different tests
 describe( "Test1", () => {
