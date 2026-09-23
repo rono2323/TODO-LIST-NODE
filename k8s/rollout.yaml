@@ -1,0 +1,83 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: todo-list
+  namespace: todo-list
+
+spec:
+  replicas: 2
+
+  revisionHistoryLimit: 2
+
+  selector:
+    matchLabels:
+      app: todo-list
+
+  strategy:
+    canary:
+      stableService: todo-list-stable
+      canaryService: todo-list-canary
+
+      trafficRouting:
+        nginx:
+          stableIngress: todo-list-ingress
+
+      steps:
+        # 10% traffic
+        - setWeight: 10
+        - pause:
+            duration: 5s
+
+        # 50% traffic
+        - setWeight: 50
+        - pause:
+            duration: 5s
+
+        # 100% traffic
+        - setWeight: 100
+
+  template:
+    metadata:
+      labels:
+        app: todo-list
+
+    spec:
+      containers:
+        - name: todo-list
+
+          image: rono23/todo-list-node:latest
+
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+      terminationGracePeriodSeconds: 10
