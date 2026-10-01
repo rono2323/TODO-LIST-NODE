@@ -58,7 +58,7 @@ spec:
       containers:
         - name: todo-list
 
-          image: rono23/todo-list-node:24
+          image: rono23/todo-list-node:25
 
           imagePullPolicy: Always
 
